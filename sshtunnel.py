@@ -373,6 +373,7 @@ class _ForwardServer(socketserver.TCPServer):  # Not Threading
     Non-threading version of the forward server
     """
     allow_reuse_address = True  # faster rebinding
+    address_family = socket.AF_INET6
 
     def __init__(self, *args, **kwargs):
         self.logger = create_logger(kwargs.pop('logger', None))
@@ -1053,7 +1054,7 @@ class SSHTunnelForwarder(object):
         if count < 0:
             raise ValueError('Too many local bind addresses '
                              '(local_bind_addresses > remote_bind_addresses)')
-        local_binds.extend([('0.0.0.0', 0) for x in range(count)])
+        local_binds.extend([('::1', 0) for x in range(count)])
         return local_binds
 
     @staticmethod
@@ -1111,7 +1112,7 @@ class SSHTunnelForwarder(object):
             self.logger.debug('Connecting via proxy: {0}'.format(proxy_repr))
             _socket = self.ssh_proxy
         else:
-            _socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            _socket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
         if isinstance(_socket, socket.socket):
             _socket.settimeout(SSH_TIMEOUT)
             _socket.connect((self.ssh_host, self.ssh_port))
@@ -1248,7 +1249,7 @@ class SSHTunnelForwarder(object):
         if isinstance(_srv.local_address, string_types):  # UNIX stream
             s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         else:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
         s.settimeout(TUNNEL_TIMEOUT)
         try:
             # Windows raises WinError 10049 if trying to connect to 0.0.0.0
